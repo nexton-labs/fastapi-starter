@@ -1,0 +1,17 @@
+{
+  "name": "fastapi-base",
+  "scripts": {},
+  "env": {
+    "DATABASE_URL": {
+      "required": true
+    },
+    "SECRET_KEY": {
+      "generator": "secret"
+    }
+  },
+  "buildpacks": [
+    { "url": "https://github.com/moneymeets/python-poetry-buildpack" },
+    { "url": "heroku/python" }
+  ],
+  "addons": ["heroku-postgresql"]
+}

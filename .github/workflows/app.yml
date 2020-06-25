@@ -1,0 +1,54 @@
+name: FastAPI Base
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    services:
+      postgres:
+        image: postgres
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+
+    steps:
+    - uses: actions/checkout@v2
+    - uses: actions/setup-python@v1
+      with:
+        python-version: 3.8.3
+        architecture: x64
+    - name: Install Poetry
+      run: pip install poetry==1.0.5
+    - name: Cache Poetry virtualenv
+      uses: actions/cache@v1
+      id: cache
+      with:
+        path: ~/.virtualenvs
+        key: poetry-${{ hashFiles('**/poetry.lock') }}
+        restore-keys: |
+          poetry-${{ hashFiles('**/poetry.lock') }}
+    - name: Set Poetry config
+      run: |
+        poetry config virtualenvs.in-project false
+        poetry config virtualenvs.path ~/.virtualenvs
+    - name: Install dependencies
+      run: poetry install --no-root
+    - name: Run linters
+      run: make lint
+    - name: Run tests
+      env:
+        PG_DATABASE_URL: postgresql://postgres:postgres@localhost:${{ job.services.postgres.ports[5432] }}
+      run: make test
