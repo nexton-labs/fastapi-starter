@@ -127,3 +127,13 @@ dmypy.json
 
 # GG local group def
 group_def.json
+
+#PyCharm
+.idea
+
+#Terraform
+**/.terraform/*
+
+# .tfstate files
+*.tfstate
+*.tfstate.*
