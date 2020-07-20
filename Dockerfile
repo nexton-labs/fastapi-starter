@@ -1,6 +1,6 @@
 FROM tiangolo/uvicorn-gunicorn-fastapi:python3.8
 
-ENV MODULE_NAME="app.server"
+ENV MODULE_NAME="app.main"
 
 COPY ./ /app
 
