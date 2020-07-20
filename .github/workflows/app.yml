@@ -103,5 +103,5 @@ jobs:
       with:
         task-definition: ${{ steps.task-def.outputs.task-definition }}
         service: fastapi-ecs-service
-        cluster: fastapi-cluster
+        cluster: fastapi-ecs-cluster
         wait-for-service-stability: true
