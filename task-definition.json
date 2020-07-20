@@ -1,6 +1,6 @@
 {
   "family": "app",
-  "executionRoleArn": "arn:aws:iam::112233445566:role/ecsTaskExecutionRole",
+  "executionRoleArn": "arn:aws:iam::424423231904:role/fastapi-starter-ecsTaskExecutionRole",
   "containerDefinitions": [
       {
           "name": "app",
