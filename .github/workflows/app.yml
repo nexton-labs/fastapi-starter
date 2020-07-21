@@ -6,6 +6,8 @@ on:
       - 'terraform/**'
     branches: [ master ]
   pull_request:
+    paths-ignore:
+      - 'terraform/**'
     branches: [ master ]
 
 jobs:
