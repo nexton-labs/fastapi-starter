@@ -39,7 +39,7 @@ variable "vpc_id" {
   default = "vpc-2b933151"
 }
 
-variable "app_name"{
+variable "app_name" {
   type    = string
   default = "fastapi-starter"
 }
