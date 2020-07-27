@@ -17,13 +17,3 @@ data "aws_acm_certificate" "main" {
 data "aws_ecr_repository" "repository" {
   name = "${local.app_name}-${local.environment}"
 }
-
-data "template_file" "task_definition_tpl" {
-  template = file("task-template.json.tpl")
-  vars = {
-    REPOSITORY_URL = data.aws_ecr_repository.repository.repository_url
-    TAG            = var.image_tag
-    AWS_ECR_REGION = local.default_region
-    LOGS_GROUP     = module.logs.log_group_name
-  }
-}

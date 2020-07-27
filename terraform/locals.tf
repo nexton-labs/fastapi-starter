@@ -10,7 +10,7 @@ locals {
   default_region    = "us-east-1"
   container_definition = jsonencode({
     "name"        = "${local.app_name}-${local.environment}"
-    "image"       = "${data.aws_ecr_repository.repository.repository_url}:${var.image_tag}"
+    "image"       = "${data.aws_ecr_repository.repository.repository_url}:${var.IMAGE_TAG}"
     "essential"   = true
     "networkMode" = "awsvpc"
     "portMappings" = [{

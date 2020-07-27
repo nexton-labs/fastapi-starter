@@ -1,4 +1,3 @@
-variable "image_tag" {
-  type    = string
+variable "IMAGE_TAG" {
   default = "latest"
 }
