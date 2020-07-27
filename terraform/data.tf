@@ -21,7 +21,7 @@ data "aws_ecr_repository" "repository" {
 data "template_file" "task_definition_tpl" {
   template = file("task-template.json.tpl")
   vars = {
-    REPOSITORY_URL = data.repository.repository_url
+    REPOSITORY_URL = data.aws_ecr_repository.repository.repository_url
     TAG            = var.image_tag
     AWS_ECR_REGION = local.default_region
     LOGS_GROUP     = module.logs.log_group_name
