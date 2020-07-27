@@ -8,30 +8,23 @@ locals {
   hosted_zone_name  = "${join(".", slice(local.split_domain, 1, length(local.split_domain)))}"
   vpc_id            = "vpc-2b933151"
   default_region    = "us-east-1"
-  logs_configuration = {
-    logDriver = "awslogs",
-    options = {
-      awslogs-group         = module.logs.log_group_name,
-      awslogs-region        = local.default_region,
-      awslogs-stream-prefix = "ecs"
-    }
-  }
-  port_mappings = {
-    hostPort      = 80,
-    protocol      = "tcp",
-    containerPort = 80
-  }
-  container_definition = [
-    {
-      container_name = "${local.app_name}-${local.environment}"
-      task_definition = {
-        name             = "${local.app_name}-${local.environment}"
-        image            = "${data.aws_ecr_repository.repository.repository_url}:${var.image_tag}"
-        essential        = true
-        networkMode      = "awsvpc"
-        portMappings     = local.port_mappings
-        logConfiguration = local.logs_configuration
+  container_definition = jsonencode({
+    "name"        = "${local.app_name}-${local.environment}"
+    "image"       = "${data.aws_ecr_repository.repository.repository_url}:${var.image_tag}"
+    "essential"   = true
+    "networkMode" = "awsvpc"
+    "portMappings" = [{
+      hostPort      = 80,
+      protocol      = "tcp",
+      containerPort = 80
+    }]
+    "logConfiguration" = {
+      "logDriver" = "awslogs",
+      "options" = {
+        "awslogs-group"         = module.logs.log_group_name,
+        "awslogs-region"        = local.default_region,
+        "awslogs-stream-prefix" = "ecs"
       }
-
-  }]
+    }
+  })
 }

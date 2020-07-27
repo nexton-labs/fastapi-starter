@@ -54,7 +54,7 @@ resource "aws_ecs_task_definition" "fastapi-task" {
   network_mode             = "awsvpc"
   cpu                      = 256
   memory                   = 512
-  container_definitions    = jsonencode(local.container_definition)
+  container_definitions    = "[${local.container_definition}]"
   execution_role_arn       = module.cluster.execution_role_arn
 }
 
