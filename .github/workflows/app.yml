@@ -92,6 +92,12 @@ jobs:
         docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
         echo "::set-output name=image::$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
 
+    # Setup to be able to call dependant modules in other private github repositories
+    - name: GitHub credentials
+      uses: fusion-engineering/setup-git-credentials@v2
+      with:
+        credentials: ${{ secrets.GH_TOKEN }}
+
     - name: Setup Terraform
       uses: hashicorp/setup-terraform@v1
       with:
