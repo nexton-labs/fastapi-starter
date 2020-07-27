@@ -80,7 +80,7 @@ async def get_current_user(
 
 class OAuth2SecretPasswordRequestForm:
     """
-    Based on fastapi.security.OAuth2PasswordRequestForm but,
+    Based on fastapi.security.tf.OAuth2PasswordRequestForm but,
         with password being a SecretStr
     """
 
