@@ -122,4 +122,5 @@ jobs:
       if: github.ref == 'refs/heads/master' && github.event_name == 'push'
       run: |
         cd terraform
-        terraform apply -var 'image_tag=${{ github.sha }}' -auto-approve
+        export TF_VAR_image_tag=${{ github.sha }}
+        terraform apply -auto-approve
