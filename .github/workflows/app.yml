@@ -2,12 +2,8 @@ name: Build & deployment workflow
 
 on:
   push:
-    paths-ignore:
-      - 'terraform/**'
     branches: [ master ]
   pull_request:
-    paths-ignore:
-      - 'terraform/**'
     branches: [ master ]
 
 jobs:
