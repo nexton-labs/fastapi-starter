@@ -13,13 +13,6 @@ module "logs" {
   retention_in_days = 7
 }
 
-module "repository" {
-  source = "git@github.com:nexton-labs/infrastructure.git//modules/aws/ecr"
-
-  app_name    = local.app_name
-  environment = local.environment
-}
-
 module "cluster" {
   source = "git@github.com:nexton-labs/infrastructure.git//modules/aws/ecs"
 
@@ -51,6 +44,8 @@ module "ecs-lb" {
     unhealthy_threshold = 2
     matcher             = "200"
   }
+
+  module_depends_on = [module.security-groups.groups_from_everywhere["HTTP"]]
 }
 
 resource "aws_ecs_task_definition" "fastapi-task" {
