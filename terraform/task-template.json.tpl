@@ -7,8 +7,8 @@
           "logConfiguration": {
             "logDriver": "awslogs",
             "options": {
-              "awslogs-group": ${LOGS_GROUP},
-              "awslogs-region": ${AWS_ECR_REGION},
+              "awslogs-group": "${LOGS_GROUP}",
+              "awslogs-region": "${AWS_ECR_REGION}",
               "awslogs-stream-prefix": "ecs"
             }
           }
