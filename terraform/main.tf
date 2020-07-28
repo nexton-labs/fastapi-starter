@@ -67,7 +67,8 @@ resource "aws_ecs_service" "fastapi-service" {
 
   network_configuration {
     subnets         = local.subnet_ids
-    security_groups = module.ecs-lb.security_groups
+    security_groups = [module.security-groups.groups_from_everywhere["HTTP"].id, module.security-groups.groups_all_to_everywhere.id]
+    assign_public_ip = true
   }
 
   load_balancer {

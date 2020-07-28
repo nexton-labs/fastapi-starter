@@ -137,3 +137,4 @@ group_def.json
 # .tfstate files
 *.tfstate
 *.tfstate.*
+*.tfvars

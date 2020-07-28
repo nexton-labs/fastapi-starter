@@ -109,21 +109,18 @@ jobs:
         cd terraform
         terraform fmt -check
 
+    - name: Generate tfvars
+        run: |
+          cd terraform
+          echo 'IMAGE_TAG="${{ github.sha }}"' > terraform.auto.tfvars
+
     - name: Terraform Plan
       run: |
         cd terraform
         terraform plan
 
-    - name: Replace image tag
-      uses: jacobtomlinson/gha-find-replace@master
-      with:
-        find: "latest"
-        replace: ${{ github.sha }}
-        include: terraform/variables.tf
-
     - name: Terraform Apply
       if: github.ref == 'refs/heads/master' && github.event_name == 'push'
       run: |
         cd terraform
-        export TF_VAR_image_tag=${{ github.sha }}
         terraform apply -auto-approve
