@@ -110,9 +110,9 @@ jobs:
         terraform fmt -check
 
     - name: Generate tfvars
-        run: |
-          cd terraform
-          echo 'IMAGE_TAG="${{ github.sha }}"' > terraform.auto.tfvars
+      run: |
+        cd terraform
+        echo 'IMAGE_TAG="${{ github.sha }}"' > terraform.auto.tfvars
 
     - name: Terraform Plan
       run: |
