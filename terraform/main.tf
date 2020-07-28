@@ -66,8 +66,8 @@ resource "aws_ecs_service" "fastapi-service" {
   desired_count   = 2
 
   network_configuration {
-    subnets         = local.subnet_ids
-    security_groups = [module.security-groups.groups_from_everywhere["HTTP"].id, module.security-groups.groups_all_to_everywhere.id]
+    subnets          = local.subnet_ids
+    security_groups  = [module.security-groups.groups_from_everywhere["HTTP"].id, module.security-groups.groups_all_to_everywhere.id]
     assign_public_ip = true
   }
 
