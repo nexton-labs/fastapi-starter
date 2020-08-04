@@ -1,8 +1,18 @@
 from app.models.api.base import Base
-from app.models.api.base import Field
 
 
-class User(Base):
-    """User account that can interact with API"""
+class UserBase(Base):
+    """
+    Nexton user
+    """
 
-    username: str = Field(..., description="Login name of user")
+    username: str
+    email: str
+
+
+class UserCreate(UserBase):
+    pass
+
+
+class UserUpdate(UserBase):
+    pass

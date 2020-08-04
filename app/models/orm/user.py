@@ -1,4 +1,5 @@
 import sqlalchemy as sa
+from sqlalchemy.orm import relationship
 
 from app.models.orm.base import ModelBase
 
@@ -7,4 +8,5 @@ class User(ModelBase):
     __tablename__ = "users"
 
     username = sa.Column(sa.String(), unique=True, nullable=False)
-    hashed_password = sa.Column(sa.String(), nullable=False)
+    email = sa.Column(sa.String(), unique=True, nullable=False)
+    candidates = relationship("Candidate", back_populates="user")  # type: ignore
