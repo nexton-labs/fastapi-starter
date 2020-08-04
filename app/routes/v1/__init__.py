@@ -3,7 +3,7 @@ import typing
 
 from app.models.api.util.exception import NotFound, ServerError
 from app.routes.utils import Namespace, get_module_routers
-from app.services.cross import security as api_security
+from app.cross import security as api_security
 from fastapi import APIRouter, Depends
 
 

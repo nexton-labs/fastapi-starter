@@ -5,8 +5,8 @@ from fastapi import APIRouter, Depends, Body
 
 from app.db.session import Session
 from app.models.api.candidate import Candidate as CandidateSchema, CandidateCreate
-from app.services.cross.db import get_db
-from app.services.cross import security as api_security
+from app.cross.db import get_db
+from app.cross import security as api_security
 from app.services.api import candidate_service  # type: ignore
 
 
