@@ -11,7 +11,7 @@ from starlette.responses import JSONResponse
 
 from app.db.loader import load_models
 from app.db.session import Session
-from app.models.orm.exceptions import RecordNotFound
+from app.repositories.exceptions import RecordNotFound
 from app.utils.log import configure_logging
 
 
