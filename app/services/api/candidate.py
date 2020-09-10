@@ -10,7 +10,7 @@ from app.models.api.candidate import CandidateCreate
 from app.models.orm.candidate import Candidate
 from app.repositories import candidate_repo, job_repo
 from app.settings.globals import AWS_IMG_BUCKET, CANDIDATE_AVATAR_PATH
-from app.utils.file_management import upload_file
+from app.utils.file_management import file_management
 
 
 class CandidateService:
@@ -45,7 +45,7 @@ class CandidateService:
             raise ValueError("File extension not allowed")
 
         file_name = self.generate_avatar_path(candidate)
-        upload_file(file.file, file_name, AWS_IMG_BUCKET)
+        file_management.upload_file(file.file, file_name, AWS_IMG_BUCKET)
 
         candidate_update = CandidateUpdate(
             name=candidate.name,
