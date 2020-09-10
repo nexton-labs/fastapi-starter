@@ -9,3 +9,7 @@ app.include_router(v1.get_router(), prefix="/v1")
 
 def run():
     server.run(app)
+
+
+if __name__ == "__main__":
+    server.debug(app)

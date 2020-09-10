@@ -17,3 +17,7 @@ data "aws_acm_certificate" "main" {
 data "aws_ecr_repository" "repository" {
   name = "${local.app_name}-${local.environment}"
 }
+
+data "aws_security_group" "allow_postgresql_from_intranet" {
+  name = "allow_postgresql_from_intranet"
+}

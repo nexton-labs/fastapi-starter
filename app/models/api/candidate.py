@@ -1,3 +1,5 @@
+from typing import Optional
+
 from pydantic import BaseModel
 
 from app.models.api.base import Base
@@ -12,6 +14,7 @@ class CandidateBase(Base):
     name: str = Field(..., description="Candidate name")
     email: str = Field(..., description="Candidate email")
     linkedin_url: str = Field(..., description="LinkedIn URL")
+    avatar_path: Optional[str] = Field(..., description="Candidate avatar path")
 
 
 class CandidateCreate(BaseModel):
@@ -21,7 +24,7 @@ class CandidateCreate(BaseModel):
 
 
 class CandidateUpdate(CandidateCreate):
-    pass
+    avatar_path: Optional[str] = Field(..., description="Candidate avatar path")
 
 
 class CandidateInDb(CandidateBase):
