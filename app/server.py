@@ -50,3 +50,7 @@ def run(app: Starlette, options: typing.Optional[dict] = None):
     }
 
     return StandaloneApplication(app, {**default_options, **options}).run()
+
+
+def debug(app: Starlette):
+    uvicorn.run(app, host="0.0.0.0", port=8000)

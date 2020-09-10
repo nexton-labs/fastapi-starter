@@ -8,6 +8,8 @@ locals {
   hosted_zone_name  = "${join(".", slice(local.split_domain, 1, length(local.split_domain)))}"
   vpc_id            = "vpc-2b933151"
   default_region    = "us-east-1"
+  bucket_name       = "fastapi-starter"
+  rds_cluster_name  = "fastapi-db-${local.environment}"
   container_definition = jsonencode({
     "name"        = "${local.app_name}-${local.environment}"
     "image"       = "${data.aws_ecr_repository.repository.repository_url}:${var.IMAGE_TAG}"
@@ -17,6 +19,23 @@ locals {
       hostPort      = 80,
       protocol      = "tcp",
       containerPort = 80
+    }]
+    "environment" : [
+      {
+        name : "DATABASE_URL",
+        value : "postgresql://${module.fastapi_rds.root_credentials}@${module.fastapi_rds.writer_endpoint}:${module.fastapi_rds.db_port}/postgres"
+      },
+      {
+        name : "AWS_IMG_BUCKET",
+        value : "${local.bucket_name}-${local.environment}"
+      },
+      {
+        name : "AWS_ACCESS_KEY_ID",
+        value : var.AWS_ACCESS_KEY_ID
+      },
+      {
+        name : "AWS_SECRET_ACCESS_KEY",
+        value : var.AWS_SECRET_ACCESS_KEY
     }]
     "logConfiguration" = {
       "logDriver" = "awslogs",

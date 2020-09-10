@@ -1,12 +1,12 @@
 from typing import List
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, Body
+from fastapi import APIRouter, Depends, Body, UploadFile, File
 
+from app.cross import security as api_security
+from app.cross.db import get_db
 from app.db.session import Session
 from app.models.api.candidate import Candidate as CandidateSchema, CandidateCreate
-from app.cross.db import get_db
-from app.cross import security as api_security
 from app.services.api import candidate_service  # type: ignore
 
 
@@ -42,3 +42,15 @@ async def attach_job_post(
     Associates a candidate to a job post
     """
     return candidate_service.add_job(candidate_id=candidate_id, job_id=job_id, db=db)
+
+
+@router.post("/{candidate_id}/avatar/", response_model=str)
+async def set_candidate_avatar(
+    candidate_id: UUID, file: UploadFile = File(...), db: Session = Depends(get_db),  # type: ignore
+):
+    """
+    Uploads the candidate's avatar image and saves the path.
+    """
+    return candidate_service.set_candidate_avatar(
+        candidate_id=candidate_id, file=file, db=db
+    )

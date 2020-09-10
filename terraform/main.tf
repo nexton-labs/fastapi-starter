@@ -48,6 +48,44 @@ module "ecs-lb" {
   module_depends_on = [module.security-groups.groups_from_everywhere["HTTP"]]
 }
 
+module "s3-bucket" {
+  source = "git@github.com:nexton-labs/infrastructure.git//modules/aws/s3"
+
+  name               = local.bucket_name
+  app_name           = local.app_name
+  environment        = local.environment
+  acl                = "private"
+  versioning_enabled = false
+  sse_algorithm      = "aws:kms"
+}
+
+resource "aws_db_subnet_group" "default" {
+  name       = "dev-internal"
+  subnet_ids = local.subnet_ids
+}
+
+# per-app database below
+module "rds_parameters" {
+  source = "git@github.com:nexton-labs/infrastructure.git//modules/aws/rds/parameter_groups/aurora-postgresql/11.7/default"
+
+  cluster_name = local.rds_cluster_name
+}
+
+module "fastapi_rds" {
+  source = "git@github.com:nexton-labs/infrastructure.git//modules/aws/rds/aurora"
+
+  cluster_name  = local.rds_cluster_name
+  cluster_count = 1
+
+  security_group_ids   = [data.aws_security_group.allow_postgresql_from_intranet.id]
+  db_subnet_group_name = aws_db_subnet_group.default.name
+  instance_class       = "db.t3.medium"
+  apply_immediately    = true
+
+  cluster_parameter_group_name  = module.rds_parameters.cluster_parameter_group_name
+  instance_parameter_group_name = module.rds_parameters.instance_parameter_group_name
+}
+
 resource "aws_ecs_task_definition" "fastapi-task" {
   family                   = local.app_name
   requires_compatibilities = ["FARGATE"]

@@ -23,6 +23,7 @@ class Candidate(ModelBase):
     name = sa.Column(sa.String(), unique=False, nullable=False)
     email = sa.Column(sa.String(), unique=True, nullable=False)
     linkedin_url = sa.Column(sa.String(), unique=True, nullable=False)
+    avatar_path = sa.Column(sa.String(), unique=True, nullable=True)
     jobs = relationship(CandidateJobs, back_populates="candidate")
     user_id = sa.Column(UUID(as_uuid=True), ForeignKey("users.id"))
     user = relationship("User", back_populates="candidates")  # type: ignore
