@@ -31,7 +31,7 @@ locals {
       },
       {
         name : "COGNITO_POOL_ID",
-        value : module.auth.identity_pool_id
+        value : module.auth.user_pool_id
       },
       {
         name : "COGNITO_REGION",

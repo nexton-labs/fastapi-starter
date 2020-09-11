@@ -38,7 +38,7 @@ def upgrade():
         sa.UniqueConstraint("description"),
         sa.UniqueConstraint("title"),
     )
-    op.create_table(
+    candidates = op.create_table(
         "candidates",
         sa.Column(
             "id",
@@ -78,6 +78,18 @@ def upgrade():
     op.add_column("users", sa.Column("email", sa.String(), nullable=False))
     op.create_unique_constraint(None, "users", ["email"])
     op.drop_column("users", "hashed_password")
+
+    op.bulk_insert(
+        candidates,
+        [
+            {
+                "id": "518efc42-4b0e-4618-97f0-c4a5277baecd",
+                "name": "Ezequiel",
+                "email": "ezequiel.picatto@nextonlabs.com",
+                "linkedin_url": "https://www.linkedin.com/in/epicatto/",
+            },
+        ],
+    )
     # ### end Alembic commands ###
 
 
