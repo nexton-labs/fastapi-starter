@@ -94,7 +94,7 @@ resource "aws_ecs_service" "fastapi-service" {
     container_name   = "${local.app_name}-${local.environment}"
     container_port   = 80
   }
-  depends_on = [module.ecs-lb,module.auth]
+  depends_on = [module.ecs-lb, module.auth]
 }
 
 
