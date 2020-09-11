@@ -3,8 +3,7 @@ import typing
 
 from app.models.api.util.exception import NotFound, ServerError
 from app.routes.utils import Namespace, get_module_routers
-from app.cross import security as api_security
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter
 
 
 logger = logging.getLogger(__name__)
@@ -16,7 +15,7 @@ def get_router() -> APIRouter:
     namespaces: typing.Dict[str, Namespace] = {
         "user": {
             "resources": ["candidate", "job"],
-            "dependencies": [Depends(api_security.get_auth_user_id)],  # type: ignore
+            # "dependencies": [Depends(api_security.get_auth_user_id)],  # type: ignore
         },
     }
 

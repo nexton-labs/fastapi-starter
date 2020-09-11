@@ -21,3 +21,10 @@ data "aws_ecr_repository" "repository" {
 data "aws_security_group" "allow_postgresql_from_intranet" {
   name = "allow_postgresql_from_intranet"
 }
+
+data "aws_security_group" "allow_http_from_everywhere" {
+  name = "allow_http_from_everywhere"
+}
+data "aws_security_group" "allow_all_to_everywhere" {
+  name = "allow_all_to_everywhere"
+}
