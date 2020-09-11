@@ -3,7 +3,7 @@ import typing
 
 from app.models.api.util.exception import NotFound, ServerError
 from app.routes.utils import Namespace, get_module_routers
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter
 
 
 logger = logging.getLogger(__name__)
