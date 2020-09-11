@@ -30,12 +30,12 @@ locals {
         value : "${local.bucket_name}-${local.environment}"
       },
       {
-        name : "AWS_ACCESS_KEY_ID",
-        value : var.AWS_ACCESS_KEY_ID
+        name : "COGNITO_POOL_ID",
+        value : module.auth.identity_pool_id
       },
       {
-        name : "AWS_SECRET_ACCESS_KEY",
-        value : var.AWS_SECRET_ACCESS_KEY
+        name : "COGNITO_REGION",
+        value : local.default_region
     }]
     "logConfiguration" = {
       "logDriver" = "awslogs",
