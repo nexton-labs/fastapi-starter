@@ -83,7 +83,7 @@ resource "aws_ecs_service" "fastapi-service" {
   cluster         = module.cluster.id
   launch_type     = "FARGATE"
   task_definition = aws_ecs_task_definition.fastapi-task.arn
-  desired_count   = 2
+  desired_count   = 1
   network_configuration {
     subnets          = local.subnet_ids
     security_groups  = [data.aws_security_group.allow_http_from_everywhere.id, data.aws_security_group.allow_all_to_everywhere.id]
@@ -94,7 +94,7 @@ resource "aws_ecs_service" "fastapi-service" {
     container_name   = "${local.app_name}-${local.environment}"
     container_port   = 80
   }
-  depends_on = [module.ecs-lb]
+  depends_on = [module.ecs-lb, module.auth]
 }
 
 

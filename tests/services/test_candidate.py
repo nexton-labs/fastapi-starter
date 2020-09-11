@@ -6,7 +6,6 @@ from app.repositories import candidate_repo
 
 
 def test_create_candidate(db):
-    assert not candidate_repo.find_multi(db)
 
     test_user = User(username="test1", email="test@email.com")
     db.add(test_user)
