@@ -68,6 +68,65 @@ module "fastapi_rds" {
   instance_parameter_group_name = module.rds_parameters.instance_parameter_group_name
 }
 
+# IAM policy document (to allow ECS tasks to assume a role)
+data "aws_iam_policy_document" "task-assume-role" {
+  statement {
+    actions = ["sts:AssumeRole"]
+
+    principals {
+      type        = "Service"
+      identifiers = ["ecs-tasks.amazonaws.com"]
+    }
+  }
+}
+
+# AWS IAM role (to allow ECS tasks to assume a role)
+resource "aws_iam_role" "ecs_task_role" {
+  name               = "${local.app_name}-ecsTaskRole"
+  assume_role_policy = data.aws_iam_policy_document.task-assume-role.json
+}
+
+# [Data] IAM policy to define S3 permissions
+data "aws_iam_policy_document" "s3_data_bucket_policy" {
+  statement {
+    sid    = ""
+    effect = "Allow"
+    actions = [
+      "s3:ListBucket"
+    ]
+    resources = [
+      "arn:aws:s3:::${module.s3-bucket.s3_bucket_name}"
+    ]
+  }
+  statement {
+    sid    = ""
+    effect = "Allow"
+    actions = [
+      "s3:DeleteObject",
+      "s3:GetObject",
+      "s3:PutObject",
+      "s3:PutObjectAcl"
+    ]
+    resources = [
+      "arn:aws:s3:::${module.s3-bucket.s3_bucket_name}/*"
+    ]
+  }
+}
+
+# AWS IAM policy
+resource "aws_iam_policy" "s3_policy" {
+  name   = "${local.app_name}-taskPolicyS3"
+  policy = data.aws_iam_policy_document.s3_data_bucket_policy.json
+
+  depends_on = [module.s3-bucket]
+}
+
+# Attaches a managed IAM policy to an IAM role
+resource "aws_iam_role_policy_attachment" "ecs_role_s3_data_bucket_policy_attach" {
+  role       = aws_iam_role.ecs_task_role.name
+  policy_arn = aws_iam_policy.s3_policy.arn
+}
+
 resource "aws_ecs_task_definition" "fastapi-task" {
   family                   = local.app_name
   requires_compatibilities = ["FARGATE"]
@@ -76,6 +135,7 @@ resource "aws_ecs_task_definition" "fastapi-task" {
   memory                   = 512
   container_definitions    = "[${local.container_definition}]"
   execution_role_arn       = module.cluster.execution_role_arn
+  task_role_arn            = aws_iam_role.ecs_task_role.arn
 }
 
 resource "aws_ecs_service" "fastapi-service" {
