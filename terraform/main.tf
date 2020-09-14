@@ -82,14 +82,14 @@ data "aws_iam_policy_document" "task-assume-role" {
 
 # AWS IAM role (to allow ECS tasks to assume a role)
 resource "aws_iam_role" "ecs_task_role" {
-  name = "${local.app_name}-ecsTaskRole"
+  name               = "${local.app_name}-ecsTaskRole"
   assume_role_policy = data.aws_iam_policy_document.task-assume-role.json
 }
 
 # [Data] IAM policy to define S3 permissions
 data "aws_iam_policy_document" "s3_data_bucket_policy" {
   statement {
-    sid = ""
+    sid    = ""
     effect = "Allow"
     actions = [
       "s3:ListBucket"
@@ -99,7 +99,7 @@ data "aws_iam_policy_document" "s3_data_bucket_policy" {
     ]
   }
   statement {
-    sid = ""
+    sid    = ""
     effect = "Allow"
     actions = [
       "s3:DeleteObject",
