@@ -29,7 +29,7 @@ jobs:
       run: |
         git add versions.txt
         git add CHANGELOG.md
-        git commit –message "Prepare release ${{ github.event.inputs.versionName }}"
+        git commit –m "Prepare release ${{ github.event.inputs.versionName }}"
         echo "::set-output name=commit::$(git rev-parse HEAD)"
     - name: Push new branch
       run: git push origin release/v${{ github.event.inputs.versionName }}
