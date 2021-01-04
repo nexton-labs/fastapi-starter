@@ -26,29 +26,29 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
-#    - name: Initialize mandatory git config
-#      run: |
-#        git config user.name "GitHub Actions"
-#        git config user.email noreply@github.com
-#    - name: Setup release information
-#      run: |
-#        versionName=`sed '2q;d' versions.txt | cut -d "=" -f2 | xargs`
-#        export VERSION_NAME=$versionName
-#        echo "::set-env name=VERSION_NAME::$VERSION_NAME"
-#    - name: Extract release notes
-#      id: extract_release_notes
-#      uses: ffurrer2/extract-release-notes@v1
-#    - name: Create Release
-#      id: create_release
-#      uses: actions/create-release@v1
-#      env:
-#        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-#      with:
-#        tag_name: ${{ env.VERSION_NAME }}
-#        release_name: v${{ env.VERSION_NAME }}
-#        body: ${{ steps.extract_release_notes.outputs.release_notes }}
-#        draft: false
-#        prerelease: false
+    - name: Initialize mandatory git config
+      run: |
+        git config user.name "GitHub Actions"
+        git config user.email noreply@github.com
+    - name: Setup release information
+      run: |
+        versionName=`sed '1q;d' versions.txt | cut -d "=" -f2 | xargs`
+        export VERSION_NAME=$versionName
+        echo "VERSION_NAME=$VERSION_NAME" >> $GITHUB_ENV
+    - name: Extract release notes
+      id: extract_release_notes
+      uses: ffurrer2/extract-release-notes@v1
+    - name: Create Release
+      id: create_release
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: ${{ env.VERSION_NAME }}
+        release_name: v${{ env.VERSION_NAME }}
+        body: ${{ steps.extract_release_notes.outputs.release_notes }}
+        draft: false
+        prerelease: false
 #    - uses: actions/setup-python@v2
 #      with:
 #        python-version: 3.8.2
