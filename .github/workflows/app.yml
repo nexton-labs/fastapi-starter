@@ -27,7 +27,7 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - name: Set env
-      run: echo ::set-env name=RELEASE_VERSION::$(echo ${GITHUB_REF:10})
+      run: echo "RELEASE_VERSION=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV
 #    - uses: actions/setup-python@v2
 #      with:
 #        python-version: 3.8.2
@@ -55,7 +55,9 @@ jobs:
 #        PG_DATABASE_URL: postgresql://postgres:postgres@localhost:${{ job.services.postgres.ports[5432] }}
 #      run: make test
     - name: Display env
-      run: echo "Release" $RELEASE_VERSION
+      run: |
+        echo $RELEASE_VERSION
+        echo ${{ env.RELEASE_VERSION }}
 
 #  deploy:
 #    if: github.event_name == 'push'
