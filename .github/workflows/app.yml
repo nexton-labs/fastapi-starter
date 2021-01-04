@@ -10,117 +10,140 @@ jobs:
   build:
     runs-on: ubuntu-latest
 
-    services:
-      postgres:
-        image: postgres
-        env:
-          POSTGRES_USER: postgres
-          POSTGRES_PASSWORD: postgres
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-        ports:
-          - 5432:5432
+#    services:
+#      postgres:
+#        image: postgres
+#        env:
+#          POSTGRES_USER: postgres
+#          POSTGRES_PASSWORD: postgres
+#        options: >-
+#          --health-cmd pg_isready
+#          --health-interval 10s
+#          --health-timeout 5s
+#          --health-retries 5
+#        ports:
+#          - 5432:5432
 
     steps:
     - uses: actions/checkout@v2
-    - uses: actions/setup-python@v2
-      with:
-        python-version: 3.8.2
-        architecture: x64
-    - name: Install Poetry
-      run: pip install poetry==1.0.5
-    - name: Cache Poetry virtualenv
-      uses: actions/cache@v1
-      id: cache
-      with:
-        path: ~/.virtualenvs
-        key: poetry-${{ hashFiles('**/poetry.lock') }}
-        restore-keys: |
-          poetry-${{ hashFiles('**/poetry.lock') }}
-    - name: Set Poetry config
-      run: |
-        poetry config virtualenvs.in-project false
-        poetry config virtualenvs.path ~/.virtualenvs
-    - name: Install dependencies
-      run: poetry install --no-root
-    - name: Run linters
-      run: make lint
-    - name: Run tests
-      env:
-        PG_DATABASE_URL: postgresql://postgres:postgres@localhost:${{ job.services.postgres.ports[5432] }}
-      run: make test
+#    - name: Initialize mandatory git config
+#      run: |
+#        git config user.name "GitHub Actions"
+#        git config user.email noreply@github.com
+#    - name: Setup release information
+#      run: |
+#        versionName=`sed '2q;d' versions.txt | cut -d "=" -f2 | xargs`
+#        export VERSION_NAME=$versionName
+#        echo "::set-env name=VERSION_NAME::$VERSION_NAME"
+#    - name: Extract release notes
+#      id: extract_release_notes
+#      uses: ffurrer2/extract-release-notes@v1
+#    - name: Create Release
+#      id: create_release
+#      uses: actions/create-release@v1
+#      env:
+#        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+#      with:
+#        tag_name: ${{ env.VERSION_NAME }}
+#        release_name: v${{ env.VERSION_NAME }}
+#        body: ${{ steps.extract_release_notes.outputs.release_notes }}
+#        draft: false
+#        prerelease: false
+#    - uses: actions/setup-python@v2
+#      with:
+#        python-version: 3.8.2
+#        architecture: x64
+#    - name: Install Poetry
+#      run: pip install poetry==1.0.5
+#    - name: Cache Poetry virtualenv
+#      uses: actions/cache@v1
+#      id: cache
+#      with:
+#        path: ~/.virtualenvs
+#        key: poetry-${{ hashFiles('**/poetry.lock') }}
+#        restore-keys: |
+#          poetry-${{ hashFiles('**/poetry.lock') }}
+#    - name: Set Poetry config
+#      run: |
+#        poetry config virtualenvs.in-project false
+#        poetry config virtualenvs.path ~/.virtualenvs
+#    - name: Install dependencies
+#      run: poetry install --no-root
+#    - name: Run linters
+#      run: make lint
+#    - name: Run tests
+#      env:
+#        PG_DATABASE_URL: postgresql://postgres:postgres@localhost:${{ job.services.postgres.ports[5432] }}
+#      run: make test
 
-  deploy:
-    if: github.event_name == 'push'
-    needs: build
-    name: Deploy
-    runs-on: ubuntu-latest
-
-    steps:
-    - name: Checkout
-      uses: actions/checkout@v1
-
-    - name: Configure AWS credentials
-      uses: aws-actions/configure-aws-credentials@v1
-      with:
-        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        aws-region: us-east-1
-
-    - name: Login to Amazon ECR
-      id: login-ecr
-      uses: aws-actions/amazon-ecr-login@v1
-
-    - name: Build, tag, and push image to Amazon ECR
-      id: build-image
-      env:
-        ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-        ECR_REPOSITORY: fastapi-starter-dev
-        IMAGE_TAG: ${{ github.sha }}
-      run: |
-        # Build a docker container and
-        # push it to ECR so that it can
-        # be deployed to ECS.
-        docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
-        docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
-        echo "::set-output name=image::$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
-
-    # Setup to be able to call dependant modules in other private github repositories
-    - name: GitHub credentials
-      uses: fusion-engineering/setup-git-credentials@v2
-      with:
-        credentials: ${{ secrets.GH_TOKEN }}
-
-    - name: Setup Terraform
-      uses: hashicorp/setup-terraform@v1
-      with:
-        cli_config_credentials_token: ${{ secrets.TF_API_TOKEN }}
-
-    - name: Terraform Init
-      run: |
-        cd terraform
-        terraform init
-
-    - name: Terraform Format
-      run: |
-        cd terraform
-        terraform fmt -check
-
-    - name: Generate tfvars
-      run: |
-        cd terraform
-        echo 'IMAGE_TAG="${{ github.sha }}"' > terraform.auto.tfvars
-
-    - name: Terraform Plan
-      run: |
-        cd terraform
-        terraform plan
-
-    - name: Terraform Apply
-      if: github.ref == 'refs/heads/master' && github.event_name == 'push'
-      run: |
-        cd terraform
-        terraform apply -auto-approve
+#  deploy:
+#    if: github.event_name == 'push'
+#    needs: build
+#    name: Deploy
+#    runs-on: ubuntu-latest
+#
+#    steps:
+#    - name: Checkout
+#      uses: actions/checkout@v1
+#
+#    - name: Configure AWS credentials
+#      uses: aws-actions/configure-aws-credentials@v1
+#      with:
+#        aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+#        aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+#        aws-region: us-east-1
+#
+#    - name: Login to Amazon ECR
+#      id: login-ecr
+#      uses: aws-actions/amazon-ecr-login@v1
+#
+#    - name: Build, tag, and push image to Amazon ECR
+#      id: build-image
+#      env:
+#        ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+#        ECR_REPOSITORY: fastapi-starter-dev
+#        IMAGE_TAG: ${{ github.sha }}
+#      run: |
+#        # Build a docker container and
+#        # push it to ECR so that it can
+#        # be deployed to ECS.
+#        docker build -t $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG .
+#        docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+#        echo "::set-output name=image::$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG"
+#
+#    # Setup to be able to call dependant modules in other private github repositories
+#    - name: GitHub credentials
+#      uses: fusion-engineering/setup-git-credentials@v2
+#      with:
+#        credentials: ${{ secrets.GH_TOKEN }}
+#
+#    - name: Setup Terraform
+#      uses: hashicorp/setup-terraform@v1
+#      with:
+#        cli_config_credentials_token: ${{ secrets.TF_API_TOKEN }}
+#
+#    - name: Terraform Init
+#      run: |
+#        cd terraform
+#        terraform init
+#
+#    - name: Terraform Format
+#      run: |
+#        cd terraform
+#        terraform fmt -check
+#
+#    - name: Generate tfvars
+#      run: |
+#        cd terraform
+#        echo 'IMAGE_TAG="${{ github.sha }}"' > terraform.auto.tfvars
+#
+#    - name: Terraform Plan
+#      run: |
+#        cd terraform
+#        terraform plan
+#
+#    - name: Terraform Apply
+#      if: github.ref == 'refs/heads/master' && github.event_name == 'push'
+#      run: |
+#        cd terraform
+#        terraform apply -auto-approve
