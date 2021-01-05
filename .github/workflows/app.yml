@@ -32,7 +32,7 @@ jobs:
         git config user.email noreply@github.com
     - name: Setup release information
       run: |
-        versionName=`sed '1q;d' versions.txt | cut -d "=" -f2 | xargs`
+        versionName=`sed '1q;d' app/.env | cut -d "=" -f2 | xargs`
         export VERSION_NAME=$versionName
         echo "VERSION_NAME=$VERSION_NAME" >> $GITHUB_ENV
     - name: Extract release notes
