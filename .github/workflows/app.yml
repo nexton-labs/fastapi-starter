@@ -178,7 +178,7 @@ jobs:
   create_release:
     needs: [ build, deploy ]
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/production'
+    if: github.ref == 'refs/heads/development'
     steps:
       - uses: actions/checkout@v2
 
@@ -206,3 +206,16 @@ jobs:
           body: ${{ steps.extract_release_notes.outputs.release_notes }}
           draft: false
           prerelease: false
+
+      - name: Create pull request into master
+        uses: thomaseizinger/create-pull-request@1.0.0
+        with:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          head: development
+          base: master
+          title: v${{ github.event.inputs.versionName }} into master
+          reviewers: ${{ github.event.issue.user.login }}
+          body: |
+            Hi!
+            This PR was created in response workflow running.
+            I've updated the version name and code commit: ${{ steps.make-commit.outputs.commit }}.
