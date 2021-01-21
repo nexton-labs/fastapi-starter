@@ -1,3 +1,18 @@
+module "vpc" {
+  source      = "git@github.com:nexton-labs/infrastructure.git//modules/aws/vpc/vpc"
+  app_name    = local.app_name
+  environment = local.environment
+}
+
+module "security-groups" {
+  source = "git@github.com:nexton-labs/infrastructure.git//modules/aws/vpc/security_groups"
+
+  vpc_id = module.vpc.vpc_id
+  app_name    = local.app_name
+  environment = local.environment
+  groups = ["HTTP", "PostgreSQL"]
+}
+
 module "logs" {
   source            = "git@github.com:nexton-labs/infrastructure.git//modules/aws/cloudwatch"
   app_name          = local.app_name
@@ -14,10 +29,10 @@ module "cluster" {
 
 module "ecs-lb" {
   source          = "git@github.com:nexton-labs/infrastructure.git//modules/aws/lb/standard"
-  name            = local.app_name
+  app_name        = local.app_name
   environment     = local.environment
-  vpc_id          = local.vpc_id
-  subnet_ids      = local.subnet_ids
+  vpc_id          = module.vpc.vpc_id
+  subnet_ids      = tolist(module.vpc.public_subnet_id)
   internal        = false
   target_type     = "ip"
   certificate_arn = data.aws_acm_certificate.main.arn
@@ -46,19 +61,19 @@ module "s3-bucket" {
 }
 
 resource "aws_db_subnet_group" "default" {
-  name       = "dev-internal"
-  subnet_ids = local.subnet_ids
+  name       = "${local.environment}-internal"
+  subnet_ids = tolist(module.vpc.private_subnet_id)
 }
 
 # per-app database below
 module "rds_parameters" {
   source       = "git@github.com:nexton-labs/infrastructure.git//modules/aws/rds/parameter_groups/aurora-postgresql/11.7/default"
-  cluster_name = local.rds_cluster_name
+  app_name           = local.app_name
+  environment        = local.environment
 }
 
 module "fastapi_rds" {
   source                        = "git@github.com:nexton-labs/infrastructure.git//modules/aws/rds/aurora"
-  cluster_name                  = local.rds_cluster_name
   cluster_count                 = 1
   security_group_ids            = [data.aws_security_group.allow_postgresql_from_intranet.id]
   db_subnet_group_name          = aws_db_subnet_group.default.name
@@ -66,6 +81,22 @@ module "fastapi_rds" {
   apply_immediately             = true
   cluster_parameter_group_name  = module.rds_parameters.cluster_parameter_group_name
   instance_parameter_group_name = module.rds_parameters.instance_parameter_group_name
+  app_name           = local.app_name
+  environment        = local.environment
+}
+
+module "auth" {
+  source = "git@github.com:nexton-labs/infrastructure.git//modules/aws/cognito"
+
+  app_name           = local.app_name
+  environment        = local.environment
+  cognito_role_external_id = "cognito_role_external_id"
+  enabled_providers  = ["Google", "Facebook"]
+  callback_urls = ["https://www.nextonlabs.com"]
+  google_client_id = "781659548050-0qfchbseh3d2hknhihauoi8oc5e8c4rj.apps.googleusercontent.com"
+  google_client_secret = "1FlNU77Ru42ipGJuUDtSSZHJ"
+  facebook_client_id = "234844068206095"
+  facebook_client_secret = "bdba8273666136fab23b618c7b7c264d"
 }
 
 # IAM policy document (to allow ECS tasks to assume a role)
@@ -82,8 +113,14 @@ data "aws_iam_policy_document" "task-assume-role" {
 
 # AWS IAM role (to allow ECS tasks to assume a role)
 resource "aws_iam_role" "ecs_task_role" {
-  name               = "${local.app_name}-ecsTaskRole"
+  name               = "${local.app_name}-${local.environment}-ecsTaskRole"
   assume_role_policy = data.aws_iam_policy_document.task-assume-role.json
+
+  tags = {
+    Application = local.app_name
+    Environment = local.environment
+    Service     = "ecs"
+  }
 }
 
 # [Data] IAM policy to define S3 permissions
@@ -115,7 +152,7 @@ data "aws_iam_policy_document" "s3_data_bucket_policy" {
 
 # AWS IAM policy
 resource "aws_iam_policy" "s3_policy" {
-  name   = "${local.app_name}-taskPolicyS3"
+  name   = "${local.app_name}-${local.environment}-taskPolicyS3"
   policy = data.aws_iam_policy_document.s3_data_bucket_policy.json
 
   depends_on = [module.s3-bucket]
@@ -125,6 +162,32 @@ resource "aws_iam_policy" "s3_policy" {
 resource "aws_iam_role_policy_attachment" "ecs_role_s3_data_bucket_policy_attach" {
   role       = aws_iam_role.ecs_task_role.name
   policy_arn = aws_iam_policy.s3_policy.arn
+}
+
+# [Data] IAM policy to define cognito permissions
+data "aws_iam_policy_document" "cognito_idp_policy" {
+  statement {
+    sid    = ""
+    effect = "Allow"
+    actions = [
+      "cognito-idp:*"
+    ]
+    resources = [
+      module.auth.arn
+    ]
+  }
+}
+
+# AWS IAM cognito policy
+resource "aws_iam_policy" "cognito_policy" {
+  name   = "${local.app_name}-${local.environment}-taskPolicyCognito"
+  policy = data.aws_iam_policy_document.cognito_idp_policy.json
+}
+
+# Attaches a managed IAM cognito policy to an IAM role
+resource "aws_iam_role_policy_attachment" "ecs_role_cognito_idp_policy_attach" {
+  role       = aws_iam_role.ecs_task_role.name
+  policy_arn = aws_iam_policy.cognito_policy.arn
 }
 
 resource "aws_ecs_task_definition" "fastapi-task" {
@@ -145,7 +208,7 @@ resource "aws_ecs_service" "fastapi-service" {
   task_definition = aws_ecs_task_definition.fastapi-task.arn
   desired_count   = 1
   network_configuration {
-    subnets          = local.subnet_ids
+    subnets          = tolist(module.vpc.public_subnet_id)
     security_groups  = [data.aws_security_group.allow_http_from_everywhere.id, data.aws_security_group.allow_all_to_everywhere.id]
     assign_public_ip = true
   }
@@ -157,12 +220,14 @@ resource "aws_ecs_service" "fastapi-service" {
   depends_on = [module.ecs-lb, module.auth]
 }
 
+resource "aws_route53_record" "route53" {
+  zone_id = data.aws_route53_zone.main.zone_id
+  name    = "${local.domain_name}."
+  type    = "A"
 
-module "auth" {
-  source = "git@github.com:nexton-labs/infrastructure.git//modules/aws/cognito"
-
-  app_name                 = "fast_api_starter"
-  stage                    = "dev"
-  region                   = "us-east-1"
-  cognito_role_external_id = "fast-api-starter-unique-4567123576"
+  alias {
+    name                   = module.ecs-lb.dns_name
+    zone_id                = module.ecs-lb.zone_id
+    evaluate_target_health = false
+  }
 }
