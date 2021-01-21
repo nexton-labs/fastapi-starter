@@ -89,7 +89,7 @@ jobs:
     - name: Terraform Format
       run: |
         cd terraform
-        terraform fmt -check
+        terraform fmt -check -recursive
     - name: Generate tfvars
       run: |
         cd terraform
@@ -118,11 +118,6 @@ jobs:
         echo "AWS_ECR_NAME=fastapi-starter-prod" >> $GITHUB_ENV
     - name: Checkout
       uses: actions/checkout@v1
-
-    - name: Unpack secrets
-      env:
-        SECRETS_PASSPHRASE: ${{ secrets.SECRETS_PASSPHRASE }}
-      run: make unpack_secrets
 
     - name: Configure AWS credentials
       uses: aws-actions/configure-aws-credentials@v1
@@ -167,7 +162,7 @@ jobs:
     - name: Terraform Format
       run: |
         cd terraform
-        terraform fmt -check
+        terraform fmt -check -recursive
     - name: Generate tfvars
       run: |
         cd terraform

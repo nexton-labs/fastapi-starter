@@ -25,7 +25,9 @@ configParser = RawConfigParser()
 configParser.read("setup.cfg")
 version = configParser.get("metadata", "version", fallback="0.1.0")
 
-app: FastAPI = FastAPI(title="FastAPI Nexton Starter", redoc_url="/redoc", version=version)
+app: FastAPI = FastAPI(
+    title="FastAPI Nexton Starter", redoc_url="/redoc", version=version
+)
 
 # TODO: update this to be secure
 origins = ["*"]

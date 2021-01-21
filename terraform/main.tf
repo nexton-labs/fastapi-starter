@@ -7,10 +7,10 @@ module "vpc" {
 module "security-groups" {
   source = "git@github.com:nexton-labs/infrastructure.git//modules/aws/vpc/security_groups"
 
-  vpc_id = module.vpc.vpc_id
+  vpc_id      = module.vpc.vpc_id
   app_name    = local.app_name
   environment = local.environment
-  groups = ["HTTP", "PostgreSQL"]
+  groups      = ["HTTP", "PostgreSQL"]
 }
 
 module "logs" {
@@ -67,9 +67,9 @@ resource "aws_db_subnet_group" "default" {
 
 # per-app database below
 module "rds_parameters" {
-  source       = "git@github.com:nexton-labs/infrastructure.git//modules/aws/rds/parameter_groups/aurora-postgresql/11.7/default"
-  app_name           = local.app_name
-  environment        = local.environment
+  source      = "git@github.com:nexton-labs/infrastructure.git//modules/aws/rds/parameter_groups/aurora-postgresql/11.7/default"
+  app_name    = local.app_name
+  environment = local.environment
 }
 
 module "fastapi_rds" {
@@ -81,22 +81,22 @@ module "fastapi_rds" {
   apply_immediately             = true
   cluster_parameter_group_name  = module.rds_parameters.cluster_parameter_group_name
   instance_parameter_group_name = module.rds_parameters.instance_parameter_group_name
-  app_name           = local.app_name
-  environment        = local.environment
+  app_name                      = local.app_name
+  environment                   = local.environment
 }
 
 module "auth" {
   source = "git@github.com:nexton-labs/infrastructure.git//modules/aws/cognito"
 
-  app_name           = local.app_name
-  environment        = local.environment
+  app_name                 = local.app_name
+  environment              = local.environment
   cognito_role_external_id = "cognito_role_external_id"
-  enabled_providers  = ["Google", "Facebook"]
-  callback_urls = ["https://www.nextonlabs.com"]
-  google_client_id = "781659548050-0qfchbseh3d2hknhihauoi8oc5e8c4rj.apps.googleusercontent.com"
-  google_client_secret = "1FlNU77Ru42ipGJuUDtSSZHJ"
-  facebook_client_id = "234844068206095"
-  facebook_client_secret = "bdba8273666136fab23b618c7b7c264d"
+  enabled_providers        = ["Google", "Facebook"]
+  callback_urls            = ["https://www.nextonlabs.com"]
+  google_client_id         = var.GOOGLE_CLIENT_ID
+  google_client_secret     = var.GOOGLE_CLIENT_SECRET_ID
+  facebook_client_id       = var.FACEBOOK_CLIENT_ID
+  facebook_client_secret   = var.FACEBOOK_CLIENT_SECRET_ID
 }
 
 # IAM policy document (to allow ECS tasks to assume a role)
