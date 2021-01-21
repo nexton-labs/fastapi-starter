@@ -6,37 +6,40 @@ on:
         description: 'Name of version  (ie 5.5.0)'
         required: true
 jobs:
-  createrelease:
+  create_release:
     runs-on: ubuntu-latest
 
     steps:
     - name: Check out code
       uses: actions/checkout@v2
+
     - name: Create release branch
       run: git checkout -b release/v${{ github.event.inputs.versionName }}
+
     - name: Initialize mandatory git config
       run: |
        git config user.name "GitHub Actions"
        git config user.email noreply@github.com
-    - name: Change version number and name
+    - name: Change version name
       run: |
-        echo > versions.txt
-        true > versions.txt
-        echo "VERSION_NAME='${{ github.event.inputs.versionName }}'" >> versions.txt
+        sed -i "/^version/s/\(.[^=]*\)\([ \t]*=[ \t]*\)\(.[^=]*\)/\1\2${{ github.event.inputs.versionName }}/" setup.cfg
+
     - name: Update Changelog
       uses: thomaseizinger/keep-a-changelog-new-release@v1
       with:
         version: ${{ github.event.inputs.versionName }}
-    - name: Commit changelog and manifest files
+
+    - name: Commit changelog and version file
       id: make-commit
       run: |
-        git add versions.txt
+        git add setup.cfg
         git add CHANGELOG.md
         git commit -m "Prepare release ${{ github.event.inputs.versionName }}"
         echo "::set-output name=commit::$(git rev-parse HEAD)"
     - name: Push new branch
       run: git push origin release/v${{ github.event.inputs.versionName }}
-    - name: Create pull request into main
+
+    - name: Create pull request into master
       uses: thomaseizinger/create-pull-request@1.0.0
       with:
        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -48,3 +51,15 @@ jobs:
            Hi!
            This PR was created in response workflow running.
            I've updated the version name and code commit: ${{ steps.make-commit.outputs.commit }}.
+    - name: Create pull request into development
+      uses: thomaseizinger/create-pull-request@1.0.0
+      with:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        head: release/v${{ github.event.inputs.versionName }}
+        base: development
+        title: v${{ github.event.inputs.versionName }} into development
+        reviewers: ${{ github.event.issue.user.login }}
+        body: |
+          Hi!
+          This PR was created in response workflow running.
+          I've updated the version name and code commit: ${{ steps.make-commit.outputs.commit }}.
