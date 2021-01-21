@@ -45,10 +45,6 @@ jobs:
       with:
         python-version: 3.8.2
         architecture: x64
-    - name: Unpack secrets
-      env:
-        SECRETS_PASSPHRASE: ${{ secrets.SECRETS_PASSPHRASE }}
-      run: make unpack_secrets
     - name: Install Poetry
       run: pip install poetry==1.0.5
     - name: Cache Poetry virtualenv
