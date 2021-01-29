@@ -4,13 +4,16 @@ locals {
   domain_name       = "api.nextonlabs.com"
   health_check_path = "/docs"
   split_domain      = split(".", local.domain_name)
-  hosted_zone_name  = "${join(".", slice(local.split_domain, 1, length(local.split_domain)))}"
+  hosted_zone_name  = join(".", slice(local.split_domain, 1, length(local.split_domain)))
   bucket_name       = local.app_name
   container_definition = jsonencode({
     "name"        = "${local.app_name}-${local.environment}"
     "image"       = "${data.aws_ecr_repository.repository.repository_url}:${var.IMAGE_TAG}"
     "essential"   = true
     "networkMode" = "awsvpc"
+    "cpu"         = 0
+    "mountPoints" = []
+    "volumesFrom" = []
     "portMappings" = [{
       hostPort      = 80,
       protocol      = "tcp",
@@ -32,6 +35,18 @@ locals {
       {
         name : "COGNITO_REGION",
         value : data.aws_region.current.id
+      },
+      {
+        name : "IMAGE_PROXY_URL",
+        value : aws_cloudfront_distribution.imgproxy-cf-distribution.domain_name
+      },
+      {
+        name : "IMAGE_PROXY_KEY",
+        value : var.IMGPROXY_KEY
+      },
+      {
+        name : "IMAGE_PROXY_SALT",
+        value : var.IMGPROXY_SALT
     }]
     "logConfiguration" = {
       "logDriver" = "awslogs",

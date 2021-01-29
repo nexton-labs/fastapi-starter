@@ -34,3 +34,10 @@ data "aws_security_group" "allow_all_to_everywhere" {
 
   depends_on = [module.security-groups]
 }
+
+data "aws_security_group" "allow_all_from_intranet" {
+  name   = "allow_all_from_intranet"
+  vpc_id = module.vpc.vpc_id
+
+  depends_on = [module.security-groups]
+}

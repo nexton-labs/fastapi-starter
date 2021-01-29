@@ -88,15 +88,18 @@ module "fastapi_rds" {
 module "auth" {
   source = "git@github.com:nexton-labs/infrastructure.git//modules/aws/cognito"
 
-  app_name                 = local.app_name
-  environment              = local.environment
-  cognito_role_external_id = "cognito_role_external_id"
-  enabled_providers        = ["Google", "Facebook"]
-  callback_urls            = ["https://www.nextonlabs.com"]
-  google_client_id         = var.GOOGLE_CLIENT_ID
-  google_client_secret     = var.GOOGLE_CLIENT_SECRET_ID
-  facebook_client_id       = var.FACEBOOK_CLIENT_ID
-  facebook_client_secret   = var.FACEBOOK_CLIENT_SECRET_ID
+  app_name                     = local.app_name
+  environment                  = local.environment
+  cognito_role_external_id     = "cognito_role_external_id"
+  enabled_providers            = ["Google", "Facebook"]
+  callback_urls                = ["https://www.nextonlabs.com"]
+  enable_mfa                   = true
+  mfa_methods                  = ["TOTP", "SMS"]
+  google_client_id             = var.GOOGLE_CLIENT_ID
+  google_client_secret         = var.GOOGLE_CLIENT_SECRET_ID
+  facebook_client_id           = var.FACEBOOK_CLIENT_ID
+  facebook_client_secret       = var.FACEBOOK_CLIENT_SECRET_ID
+  post_confirmation_lambda_arn = aws_lambda_function.user_post_confirmation.arn
 }
 
 # IAM policy document (to allow ECS tasks to assume a role)

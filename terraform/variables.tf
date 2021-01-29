@@ -22,3 +22,11 @@ variable "FACEBOOK_CLIENT_SECRET_ID" {
   default = ""
 }
 
+variable "IMGPROXY_KEY" {
+  default = ""
+}
+
+variable "IMGPROXY_SALT" {
+  default = ""
+}
+
