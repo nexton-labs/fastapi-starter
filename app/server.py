@@ -4,7 +4,6 @@ import typing
 
 import gunicorn.app.base
 import uvicorn.workers
-
 from starlette.applications import Starlette
 
 

@@ -9,5 +9,6 @@ class Job(ModelBase):
     __tablename__ = "jobs"
 
     title = sa.Column(sa.String(), unique=True, nullable=False)
-    description = sa.Column(sa.String(), unique=True, nullable=False)
+    description = sa.Column(sa.String(), nullable=False)
+
     candidates = relationship(CandidateJobs, back_populates="job")

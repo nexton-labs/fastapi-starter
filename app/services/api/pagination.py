@@ -9,7 +9,6 @@ from app.models.api.util.response import List
 from app.models.api.util.response import ListMeta
 from app.models.orm.base import ModelBase
 
-
 T = typing.TypeVar("T", bound=ModelBase)
 
 

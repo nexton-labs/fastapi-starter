@@ -4,7 +4,6 @@ from pydantic import BaseModel
 from pydantic import Field
 from pydantic.generics import GenericModel
 
-
 Item = typing.TypeVar("Item")
 R = typing.TypeVar("R")
 

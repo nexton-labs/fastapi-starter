@@ -1,19 +1,23 @@
-# type: ignore
 from typing import List, Dict, Optional
+from uuid import UUID
 
 import requests
-
 from fastapi import Depends
 from fastapi import HTTPException
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
-from pydantic import BaseModel
-from starlette.status import HTTP_403_FORBIDDEN
-
-from app.settings.globals import COGNITO_POOL_ID, COGNITO_REGION
 from jose import jwt, jwk, JWTError
 from jose.utils import base64url_decode
+from pydantic import BaseModel
+from sqlalchemy.orm import Session
 from starlette.requests import Request
+from starlette.status import HTTP_403_FORBIDDEN
 
+from app.cross.db import get_db
+from app.models.orm.candidate import Candidate
+from app.models.orm.user import User
+from app.repositories import user_repo, candidate_repo
+from app.settings.globals import COGNITO_POOL_ID, COGNITO_REGION
+from app.utils.constants import Role
 
 JWK = Dict[str, str]
 
@@ -55,10 +59,13 @@ class JWTBearer(HTTPBearer):
         key = jwk.construct(public_key)
         decoded_signature = base64url_decode(jwt_credentials.signature.encode())
 
-        return key.verify(jwt_credentials.message.encode(), decoded_signature)
+        is_valid: bool = key.verify(jwt_credentials.message.encode(), decoded_signature)
+        return is_valid
 
-    async def __call__(self, request: Request) -> Optional[JWTAuthorizationCredentials]:
-        credentials: HTTPAuthorizationCredentials = await super().__call__(request)
+    async def __call__(self, request: Request) -> Optional[JWTAuthorizationCredentials]:  # type: ignore
+        credentials: Optional[HTTPAuthorizationCredentials] = await super().__call__(
+            request
+        )
 
         if credentials:
             if not credentials.scheme == "Bearer":
@@ -89,6 +96,7 @@ class JWTBearer(HTTPBearer):
                 )
 
             return jwt_credentials
+        return None
 
 
 auth = JWTBearer(json_web_key_set)
@@ -98,6 +106,30 @@ async def get_auth_user_id(
     credentials: JWTAuthorizationCredentials = Depends(auth),
 ) -> str:
     try:
-        return credentials.claims["sub"]
+        return credentials.claims["custom:id"]
     except KeyError:
-        HTTPException(status_code=HTTP_403_FORBIDDEN, detail="Username missing")
+        raise HTTPException(status_code=HTTP_403_FORBIDDEN, detail="ID missing")
+
+
+async def get_auth_user(
+    db: Session = Depends(get_db), user_id: UUID = Depends(get_auth_user_id),
+) -> Optional[User]:
+    user: User = user_repo.find(db=db, model_id=user_id)
+    return user
+
+
+async def get_auth_admin(user: User = Depends(get_auth_user),) -> User:
+    if Role.ADMIN.name not in [role.name for role in user.roles]:  # type: ignore
+        raise HTTPException(status_code=HTTP_403_FORBIDDEN, detail="User is not admin")
+    return user
+
+
+async def get_auth_candidate(
+    db: Session = Depends(get_db), user: User = Depends(get_auth_user),
+) -> Optional[Candidate]:
+    if Role.CANDIDATE.name not in [role.name for role in user.roles]:  # type: ignore
+        raise HTTPException(
+            status_code=HTTP_403_FORBIDDEN, detail="User is not a candidate"
+        )
+    candidate = candidate_repo.get_by_user(db=db, user=user)
+    return candidate

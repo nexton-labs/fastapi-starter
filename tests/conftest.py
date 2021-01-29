@@ -1,6 +1,7 @@
+from typing import Generator
+
 import alembic.config
 import pytest
-
 from sqlalchemy import create_engine
 from sqlalchemy.orm.session import Session
 
@@ -39,7 +40,7 @@ def setup_test_db():
 
 
 @pytest.yield_fixture(name="db", scope="function")
-def db_session(test_db):
+def db_session(test_db) -> Generator:
     connection = test_db.connect()
     transaction = connection.begin()
     session = Session(autocommit=False, autoflush=False, bind=connection)

@@ -22,3 +22,6 @@ migrate:
 
 gen_migration:
 	poetry run alembic revision --autogenerate -m "$(m)"
+
+undo_migration:
+	poetry run alembic downgrade -1

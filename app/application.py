@@ -2,7 +2,6 @@ import logging
 from configparser import RawConfigParser
 
 import psycopg2.errors
-
 from fastapi import FastAPI
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm.exc import NoResultFound
@@ -14,7 +13,6 @@ from app.db.loader import load_models
 from app.db.session import Session
 from app.repositories.exceptions import RecordNotFound
 from app.utils.log import configure_logging
-
 
 configure_logging()
 load_models()
@@ -43,9 +41,15 @@ app.add_middleware(
 @app.middleware("http")
 async def db_session_middleware(request: Request, call_next):
     request.state.db = Session()
-    response = await call_next(request)
-    request.state.db.close()
-    return response
+    try:
+        response = await call_next(request)
+        request.state.db.commit()
+        return response
+    except Exception as ex:
+        request.state.db.rollback()
+        raise ex
+    finally:
+        request.state.db.close()
 
 
 @app.exception_handler(IntegrityError)
